@@ -9,7 +9,7 @@ entries:
     digest: e38b9a6102fe3c7ae822957ebd66e3aee25511387a998f2b3f399b213bd3e122
     name: cost-analyzer
     urls:
-    - https://github.com/tdovan/helm-charts/cost-analyzer-1.0.0.tgz
+    - https://tdovan.github.io/helm-charts/cost-analyzer-1.0.0.tgz
     version: 1.0.0
   my-app:
   - apiVersion: v1
@@ -19,6 +19,6 @@ entries:
     digest: 4d66fab2efb130e26cb9edfe6cbaa4d485fd29408a7e6a8ac99fad85da2640ed
     name: my-app
     urls:
-    - https://github.com/tdovan/helm-charts/my-app-0.1.0.tgz
+    - https://tdovan.github.io/helm-charts/my-app-0.1.0.tgz
     version: 0.1.0
 generated: 2019-07-17T15:08:28.59612722+02:00
