@@ -18,9 +18,6 @@ spec:
     {{ end }}
 {{- end -}}
 {{- else -}}
-annotations:
-  volume.beta.kubernetes.io/storage-class: portworx-sc
-  volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/portworx-volume
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
