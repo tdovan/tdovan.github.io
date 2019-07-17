@@ -3,11 +3,11 @@ entries:
   my-app:
   - apiVersion: v1
     appVersion: "1.0"
-    created: 2019-07-17T14:54:58.810186605+02:00
+    created: 2019-07-17T14:59:41.969031991+02:00
     description: A Helm chart for Kubernetes
     digest: 4d66fab2efb130e26cb9edfe6cbaa4d485fd29408a7e6a8ac99fad85da2640ed
     name: my-app
     urls:
     - https://tdovan.github.io/helm-charts/my-app-0.1.0.tgz
     version: 0.1.0
-generated: 2019-07-17T14:54:58.80921165+02:00
+generated: 2019-07-17T14:59:41.968082543+02:00
