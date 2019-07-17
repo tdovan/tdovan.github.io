@@ -1,0 +1,182 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "cost-analyzer.fullname" . }}
+  labels:
+    {{ include "cost-analyzer.commonLabels" . | nindent 4 }}
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{ include "cost-analyzer.selectorLabels" . | nindent 8 }}
+{{- if .Values.global.podAnnotations}}
+      annotations:
+{{- with .Values.global.podAnnotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      restartPolicy: Always
+      serviceAccountName: {{ template "cost-analyzer.fullname" . }}
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+            items:
+              - key: nginx.conf
+                path: default.conf
+        - name: persistent-configs
+{{- if .Values.persistentVolume }}
+{{- if .Values.persistentVolume.enabled }}
+          persistentVolumeClaim: 
+            claimName: {{ template "cost-analyzer.fullname" . }}
+{{- else }}
+          emptyDir: {}
+{{- end -}}
+{{- else }}
+          persistentVolumeClaim: 
+            claimName: {{ template "cost-analyzer.fullname" . }}
+{{- end }}
+      initContainers:
+{{- if .Values.supportNFS }}
+        - name: config-perms-fix
+          image: busybox
+          command: ["/bin/chmod", "-R", "777", "/var/configs"]
+          volumeMounts:
+            - name: persistent-configs
+              mountPath: /var/configs
+          securityContext:
+            runAsUser: 0
+{{ end }}
+        {{- if .Values.kubecostInit }}
+        - image: {{ .Values.kubecostInit.image }}:prod-{{ $.Chart.AppVersion }}
+        {{- else }}
+        - image: ajaytripathy/kubecost-init:prod-{{ $.Chart.AppVersion }}
+        {{ end }}
+          name: cost-analyzer-init
+          env:
+            - name: PROMETHEUS_SERVER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "cost-analyzer.fullname" . }}
+                  key: prometheus-server-endpoint
+      containers:
+        {{- if .Values.kubecostFrontend }}
+        - image: {{ .Values.kubecostFrontend.image }}:prod-{{ $.Chart.AppVersion }}
+        {{- else }}
+        - image: ajaytripathy/kubecost-frontend:prod-{{ $.Chart.AppVersion }}
+        {{ end }}
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          name: cost-analyzer-frontend
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "55Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 200
+        {{- if .Values.kubecost }}
+        - image: {{ .Values.kubecost.image }}:prod-{{ $.Chart.AppVersion }}
+        {{- else }}
+        - image: ajaytripathy/kubecost:prod-{{ $.Chart.AppVersion }}
+        {{ end }}
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "55Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          name: cost-analyzer-server
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 200
+          volumeMounts:
+            - name: persistent-configs
+              mountPath: /var/configs
+          env:
+            - name: PROMETHEUS_SERVER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "cost-analyzer.fullname" . }}
+                  key: prometheus-server-endpoint
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/configs/key.json
+            - name: KUBECOST_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "cost-analyzer.fullname" . }}
+                  key: kubecost-token
+            {{- if eq .Values.global.grafana.proxy false }}
+            - name: GRAFANA_URL
+              valueFrom: 
+                configMapKeyRef: 
+                  name: external-grafana-config-map
+                  key: grafanaURL
+            {{- end }}
+        {{- if .Values.kubecostModel }}
+        - image: {{ .Values.kubecostModel.image }}:prod-{{ $.Chart.AppVersion }}
+        {{- else }}
+        - image: ajaytripathy/kubecost-cost-model:prod-{{ $.Chart.AppVersion }}
+        {{ end }}
+          name: cost-model
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "55Mi"
+            limits:
+              cpu: "800m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 200
+          volumeMounts:
+            - name: persistent-configs
+              mountPath: /var/configs
+          env:
+            - name: PROMETHEUS_SERVER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "cost-analyzer.fullname" . }}
+                  key: prometheus-server-endpoint
+            - name: CLOUD_PROVIDER_API_KEY
+              value: "AIzaSyDXQPG_MHUEy9neR7stolq6l0ujXmjJlvk" # The GCP Pricing API requires a key.
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/configs/key.json
+            - name: CONFIG_PATH
+              value: /var/configs/
+            - name: KUBECOST_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ template "cost-analyzer.fullname" . }}
+                  key: kubecost-token
+          imagePullPolicy: Always

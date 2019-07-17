@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hpe-kubecost.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "hpe-kubecost.name" . }}
+    helm.sh/chart: {{ include "hpe-kubecost.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "hpe-kubecost.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
