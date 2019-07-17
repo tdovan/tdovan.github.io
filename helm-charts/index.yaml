@@ -2,23 +2,33 @@ apiVersion: v1
 entries:
   cost-analyzer:
   - apiVersion: v1
+    appVersion: 1.0.1
+    created: 2019-07-17T15:31:50.887949749+02:00
+    description: A Helm chart that sets up Kubecost, Prometheus, and Grafana to monitor
+      cloud costs.
+    digest: 9e3d9793f6302a2249f56f22b6697a0ffdd6e03bc35db092710969fe4a4996fe
+    name: cost-analyzer
+    urls:
+    - https://github.com/tdovan/helm-charts/cost-analyzer-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
     appVersion: 1.0.0
-    created: 2019-07-17T15:08:28.608326777+02:00
+    created: 2019-07-17T15:31:50.879023614+02:00
     description: A Helm chart that sets up Kubecost, Prometheus, and Grafana to monitor
       cloud costs.
     digest: e38b9a6102fe3c7ae822957ebd66e3aee25511387a998f2b3f399b213bd3e122
     name: cost-analyzer
     urls:
-    - https://tdovan.github.io/helm-charts/cost-analyzer-1.0.0.tgz
+    - https://github.com/tdovan/helm-charts/cost-analyzer-1.0.0.tgz
     version: 1.0.0
   my-app:
   - apiVersion: v1
     appVersion: "1.0"
-    created: 2019-07-17T15:08:28.608976225+02:00
+    created: 2019-07-17T15:31:50.888642217+02:00
     description: A Helm chart for Kubernetes
     digest: 4d66fab2efb130e26cb9edfe6cbaa4d485fd29408a7e6a8ac99fad85da2640ed
     name: my-app
     urls:
-    - https://tdovan.github.io/helm-charts/my-app-0.1.0.tgz
+    - https://github.com/tdovan/helm-charts/my-app-0.1.0.tgz
     version: 0.1.0
-generated: 2019-07-17T15:08:28.59612722+02:00
+generated: 2019-07-17T15:31:50.86620935+02:00
